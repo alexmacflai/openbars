@@ -1,33 +1,62 @@
-# Open Bars Site
+# Open Bars
 
-Static rebuild of Open Bars using Astro.
+Static Astro rebuild of the Open Bars archive: a single-page public collection of CC0 music releases, visually aligned to the original WordPress site but generated at build time from release assets.
 
-## Architecture
-- This repo is the site/app repo.
-- Release assets are expected to live in a separate public repo.
-- The archive page is generated at build time from the asset structure.
-- The site output is static and suitable for DreamHost deployment.
+## What this repo is
+- The public site repo for Open Bars.
+- A static archive page grouped by year and ordered reverse-chronologically.
+- A frontend that expects one playable MP3 and one downloadable ZIP per release.
 
-## Commands
+## What this repo is not
+- Not a CMS.
+- Not a server-rendered app.
+- Not the long-term home for release assets.
+
+## Stack
+- Astro for static site generation.
+- Plain CSS and browser JavaScript for the player and interactions.
+- DreamHost-friendly static output.
+
+## Local development
 ```bash
 npm install
 npm run dev
+```
+
+Other useful commands:
+```bash
 npm run build
+npm run preview
 npm run check
 ```
 
-## Asset Ingestion Modes
+## Release data and assets
 
-### Canonical mode
-Default mode once the public `openbars-assets` repo exists in canonical form.
+Open Bars is designed around a separate public assets repo. By default, release metadata is inferred from the asset folder and file names.
 
-Expected structure:
+Canonical asset structure:
 ```text
 releases/YYYY/MM/{release}.mp3
 releases/YYYY/MM/{release}.zip
 ```
 
-Optional environment variables:
+Example:
+```text
+releases/2024/01/20240118.mp3
+releases/2024/01/20240118.zip
+```
+
+Conventions:
+- One release maps to one MP3 and one ZIP.
+- Release IDs are date-based.
+- Releases are grouped by year on the archive page.
+- If a release is missing either asset, the build fails.
+
+## Environment configuration
+
+### Canonical mode
+Use this once the asset repo follows the canonical structure above.
+
 ```bash
 OPENBARS_SOURCE_MODE=canonical
 OPENBARS_ASSETS_DIR=/absolute/path/to/openbars-assets
@@ -35,13 +64,12 @@ OPENBARS_ASSETS_BASE_URL=https://your-user.github.io/openbars-assets/
 ```
 
 ### Migration mode
-Keep this around only while reconciling the older mixed sources.
+Temporary compatibility mode for older mixed-source assets.
 
 Expected local sources:
-- ZIP files in this repo as `YYYY/YYYYMMDD.zip`
+- ZIP files as `YYYY/YYYYMMDD.zip`
 - MP3 files under `reference/audio-files/YYYY/MM/YYYYMMDD.mp3`
 
-Optional environment variables:
 ```bash
 OPENBARS_SOURCE_MODE=migration
 OPENBARS_MIGRATION_ZIP_DIR=/absolute/path/to/openbars-site
@@ -50,8 +78,7 @@ OPENBARS_MIGRATION_ZIP_BASE_URL=https://raw.githubusercontent.com/your-user/your
 OPENBARS_MIGRATION_AUDIO_BASE_URL=https://raw.githubusercontent.com/your-user/your-repo/master/reference/audio-files/
 ```
 
-## Validation
-- The build fails if a release is missing an MP3 or ZIP.
-- Canonical mode requires releases to live under `releases/YYYY/MM/`.
-- Migration mode fails if a release id has multiple MP3 matches.
-- Releases are sorted reverse-chronologically and grouped by year.
+## Deployment notes
+- The built site is static and suitable for DreamHost deployment.
+- Public MP3 and ZIP files should be served from GitHub-hosted asset URLs.
+- This repo should preserve the original archive experience while shedding WordPress-only scaffolding.

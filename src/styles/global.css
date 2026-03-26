@@ -206,16 +206,13 @@ hgroup a:hover span {
 }
 
 .divider .inner {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-}
-
-.divider img {
-  position: relative;
-  left: -6rem;
-  width: 100%;
+  width: calc(100% + 16rem);
+  height: 100%;
+  background-image: url("/assets/images/divider.svg");
+  background-repeat: repeat-x;
+  background-position: left center;
+  background-size: auto 100%;
+  transform: translateX(var(--divider-offset, -6rem));
   transition: all var(--duration-very-long) ease;
 }
 
@@ -249,6 +246,7 @@ section h2 {
 }
 
 .card {
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -371,14 +369,16 @@ a.download {
 }
 
 .song.track.active {
-  flex: 1 0 0;
-  flex-shrink: 0;
-  align-self: stretch;
-  background: var(--color-red);
+  width: 0;
+  height: 100%;
+  flex: 0 0 auto;
+  background: transparent;
+  transition: width 0.1s linear, background-color var(--duration-short) var(--timing-custom1);
 }
 
-.song.track.inactive:hover .active {
-  background: var(--color-yellow);
+.song.track.inactive:hover .active,
+.song.track.inactive.previewing .active {
+  background: var(--color-red);
 }
 
 button,
@@ -442,17 +442,19 @@ button .pause {
 }
 
 .card:hover,
-.card.playing:hover {
-  transition: all var(--duration-short) var(--timing-custom1);
-  z-index: 1;
+.card:has(.download:hover),
+.card:has(button:focus-visible),
+.card:has(a.download:focus-visible) {
+  z-index: 4;
 }
 
+.card:hover,
 .card.playing:hover {
-  z-index: 3;
+  transition: all var(--duration-short) var(--timing-custom1);
 }
 
 .card.playing {
-  z-index: 3;
+  z-index: 10;
   --card-playing-translate: var(--size-very-small);
   --card-playing-shadow: calc(var(--size-small) + 0.245rem);
   animation:
@@ -474,6 +476,58 @@ button .pause {
 
 .card.playing .track.active {
   animation: card-active-track-playing var(--duration-very-long) infinite ease-in-out;
+}
+
+.card.playing:hover,
+.card.playing:has(button:focus-visible),
+.card.playing:has(a.download:focus-visible) {
+  transition: none;
+  animation: none;
+  transform: translate(0.38rem, 0.38rem);
+  box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-red);
+  border-color: var(--color-red);
+  background: var(--color-yellow);
+}
+
+.card.playing:hover *,
+.card.playing:has(button:focus-visible) *,
+.card.playing:has(a.download:focus-visible) * {
+  transition: none;
+  animation: none;
+  color: var(--color-red);
+}
+
+.card.playing:hover .new-label,
+.card.playing:has(button:focus-visible) .new-label,
+.card.playing:has(a.download:focus-visible) .new-label {
+  color: var(--color-white);
+}
+
+.card.playing:hover .song.track.inactive,
+.card.playing:has(button:focus-visible) .song.track.inactive,
+.card.playing:has(a.download:focus-visible) .song.track.inactive {
+  border-color: var(--color-red);
+  background: var(--color-red);
+}
+
+.card.playing:hover .song.track.active,
+.card.playing:has(button:focus-visible) .song.track.active,
+.card.playing:has(a.download:focus-visible) .song.track.active {
+  animation: none;
+  background: var(--color-yellow);
+}
+
+.card.playing .tooltip,
+.card.playing .tooltip * {
+  color: var(--color-blue);
+  animation: none;
+}
+
+.card.playing .tooltip.waveText span.letter {
+  animation-name: wave-small;
+  animation-duration: 0.3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
 }
 
 @keyframes card-playing {
@@ -536,7 +590,7 @@ button .pause {
   position: absolute;
   top: 2.25rem;
   right: 0;
-  z-index: 15;
+  z-index: 25;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -561,6 +615,23 @@ a.download:hover .tooltip {
   border-width: var(--size-tiny);
   color: var(--color-blue);
   transition: all var(--duration-medium) var(--timing-custom1);
+}
+
+.card.playing .song.track.inactive {
+  background: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.card.playing .song.track.active {
+  background: var(--color-yellow);
+}
+
+.card.paused {
+  z-index: 6;
+}
+
+.card.paused .song.track.active {
+  background: var(--color-red);
 }
 
 .tooltip * {
