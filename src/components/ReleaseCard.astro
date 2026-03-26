@@ -23,9 +23,14 @@ const remainingId = `remaining-time-${release.slug}`;
     <div class="song controls">
       <audio id={audioId} preload="metadata" src={release.audioUrl}></audio>
 
-      <button type="button" class="play" data-audio-id={audioId} aria-label={`Play ${release.id}`}>
-        <span class="material-symbols-sharp icon play">play_arrow</span>
-        <span class="material-symbols-sharp icon pause">pause</span>
+      <button
+        type="button"
+        class="player-toggle"
+        data-audio-id={audioId}
+        aria-label={`Play ${release.id}`}
+      >
+        <span class="material-symbols-sharp icon icon-play">play_arrow</span>
+        <span class="material-symbols-sharp icon icon-pause">pause</span>
       </button>
 
       <div class="song progress">

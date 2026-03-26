@@ -384,6 +384,8 @@ a.download {
 button,
 a.download {
   position: relative;
+  display: inline-grid;
+  place-items: center;
   justify-content: center;
   padding: var(--size-super-small);
   background: none;
@@ -403,6 +405,11 @@ a.download::after {
   transition: all var(--duration-quick) var(--timing-custom2);
 }
 
+.card.playing button::after,
+.card.playing a.download::after {
+  background: var(--color-white);
+}
+
 button:hover::after,
 a.download:hover::after {
   width: 2.5rem;
@@ -413,28 +420,36 @@ a.download:hover::after {
 
 .icon {
   z-index: 1;
+  color: inherit;
 }
 
-button .play,
-button .pause {
-  transition: all var(--duration-long) var(--timing-custom1);
-}
-
-button .pause {
-  position: absolute;
-  transform: rotate(-90deg);
-  opacity: 0;
-}
-
-.card.playing .pause {
+.card .icon-play {
   transform: rotate(0deg);
   opacity: 1;
 }
 
-.card.playing .play {
+.card .icon-pause {
+  transform: rotate(-90deg);
+  opacity: 0;
+}
+
+.card.playing .icon-pause {
+  transform: rotate(0deg);
+  opacity: 1;
+}
+
+.card.playing .icon-play {
   transform: rotate(90deg);
   opacity: 0;
 }
+
+.card .icon,
+.card .icon {
+  grid-area: 1 / 1;
+  will-change: transform, opacity;
+  transition: transform var(--duration-long) var(--timing-custom1), opacity var(--duration-long) var(--timing-custom1)
+}
+
 
 .card:hover {
   box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-blue);
@@ -462,7 +477,11 @@ button .pause {
     card-playing var(--duration-very-long) infinite ease-in-out;
 }
 
-.card.playing * {
+.card.playing header h3,
+.card.playing .remaining-time,
+.card.playing .player-toggle,
+.card.playing .icon-pause,
+.card.playing .download {
   animation: card-text-playing var(--duration-very-long) infinite ease-in-out;
 }
 
@@ -492,7 +511,6 @@ button .pause {
 .card.playing:hover *,
 .card.playing:has(button:focus-visible) *,
 .card.playing:has(a.download:focus-visible) * {
-  transition: none;
   animation: none;
   color: var(--color-red);
 }

@@ -42,8 +42,6 @@ function resetAudioUI(audio) {
     `[data-audio-id="${audio.id}"] .song.track.active`,
   );
   const card = audio.closest("article");
-  const playButton = document.querySelector(`button[data-audio-id="${audio.id}"]`);
-
   if (remainingTimeDisplay && !Number.isNaN(audio.duration)) {
     remainingTimeDisplay.textContent = formatTime(audio.duration);
   }
@@ -51,11 +49,6 @@ function resetAudioUI(audio) {
   if (progressBarActive) {
     progressBarActive.style.width = "0%";
     progressBarActive.parentElement?.classList.remove("previewing");
-  }
-
-  if (playButton) {
-    playButton.classList.remove("pause");
-    playButton.classList.add("play");
   }
 
   if (card) {
@@ -72,8 +65,6 @@ function setPausedAudioUI(audio) {
   );
   const track = document.querySelector(`[data-audio-id="${audio.id}"]`);
   const card = audio.closest("article");
-  const playButton = document.querySelector(`button[data-audio-id="${audio.id}"]`);
-
   if (remainingTimeDisplay && !Number.isNaN(audio.duration)) {
     const remaining = audio.duration - audio.currentTime;
     remainingTimeDisplay.textContent = formatTime(remaining);
@@ -84,11 +75,6 @@ function setPausedAudioUI(audio) {
   }
 
   track?.classList.remove("previewing");
-
-  if (playButton) {
-    playButton.classList.remove("pause");
-    playButton.classList.add("play");
-  }
 
   if (card) {
     card.classList.remove("playing");
@@ -112,8 +98,6 @@ function togglePlayPause(audioId, button) {
 
   if (audio.paused || audio.ended) {
     audio.play();
-    button.classList.remove("play");
-    button.classList.add("pause");
     const card = audio.closest("article");
     card?.classList.add("playing");
     card?.classList.remove("paused");
