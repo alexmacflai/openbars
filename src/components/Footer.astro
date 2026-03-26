@@ -1,0 +1,36 @@
+---
+type Props = {
+  heading: string;
+};
+
+const { heading } = Astro.props;
+---
+
+<footer id="footer">
+  <div class="inner">
+    <div class="end-bar"></div>
+    <h2 class="waveText">{heading}</h2>
+    <p>
+      My drive to create is both my curse and my muse. Mostly my curse. Please help this tormented soul:
+      wander through
+      <a
+        class="waveText"
+        href="https://open.spotify.com/show/38GvMWusP4DZXYxmvFmKqw"
+        target="_blank"
+        rel="noreferrer"
+      >
+        God's Answering Machine
+      </a>
+      or follow my journey at
+      <a
+        class="waveText"
+        href="https://www.instagram.com/alexmacflai/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        @alexmacflai
+      </a>.
+      Quickly, my time is running out!
+    </p>
+  </div>
+</footer>

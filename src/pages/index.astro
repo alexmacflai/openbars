@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import ReleaseCard from "../components/ReleaseCard.astro";
+import { getReleases } from "../lib/releases";
+import { siteCopy, siteLinks } from "../lib/site";
+
+const releases = await getReleases();
+const releasesByYear = Object.entries(
+  releases.reduce<Record<string, typeof releases>>((groups, release) => {
+    groups[release.year] ??= [];
+    groups[release.year].push(release);
+    return groups;
+  }, {}),
+).sort(([yearA], [yearB]) => Number(yearB) - Number(yearA));
+---
+
+<BaseLayout title={siteCopy.title}>
+  <Header label={siteCopy.headerLabel} />
+
+  <main>
+    <hgroup id="intro">
+      <div class="end-bar"></div>
+      <span id="anchor-license"></span>
+      <h1>{siteCopy.title}</h1>
+      <p id="license">
+        {siteCopy.licenseText}
+        <a class="waveText" href={siteLinks.license} target="_blank" rel="noreferrer"> CC0 1.0 license</a>.
+      </p>
+      <p>{siteCopy.followupText}</p>
+
+      <div class="divider">
+        <div class="inner">
+          <img src="/assets/images/divider.svg" alt="" />
+        </div>
+      </div>
+      <small>{siteCopy.disclaimer}</small>
+    </hgroup>
+
+    {
+      releasesByYear.map(([year, yearlyReleases]) => (
+        <section>
+          <div class="end-bar"></div>
+          <h2>{year}</h2>
+          <div class="carousel">
+            <div class="grid grab">
+              {yearlyReleases.map((release) => (
+                <ReleaseCard release={release} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ))
+    }
+  </main>
+
+  <span id="anchor-end"></span>
+  <div class="snackbar">
+    <span class="material-symbols-sharp icon">done</span>
+    <p>Link to song copied to clipboard.</p>
+  </div>
+  <Footer heading={siteCopy.footerHeading} />
+</BaseLayout>
