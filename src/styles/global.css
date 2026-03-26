@@ -30,6 +30,7 @@
   --color-yellow: #eff483;
 
   --max-width: 90rem;
+  --shell-padding: var(--size-very-large);
 
   --border: var(--size-tiny) solid var(--color-blue);
   --shadow-default: var(--size-super-small) var(--size-super-small) 0 0 var(--color-blue);
@@ -63,11 +64,58 @@ body {
   min-height: 100%;
 }
 
+html::before {
+  content: none;
+}
+
+html::after {
+  content: "";
+  position: fixed;
+  top: -100vh;
+  bottom: -100vh;
+  right: max(
+    calc(var(--shell-padding) + var(--size-small) + var(--size-super-small)),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding) + var(--size-small) + var(--size-super-small))
+  );
+  width: var(--size-tiny);
+  background: var(--color-blue);
+  pointer-events: none;
+  z-index: 2;
+}
+
 body {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: var(--color-grey);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  top: -100vh;
+  bottom: -100vh;
+  pointer-events: none;
+  z-index: 2;
+}
+
+body::before {
+  left: max(
+    var(--shell-padding),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding))
+  );
+  width: var(--size-tiny);
+  background: var(--color-blue);
+}
+
+body::after {
+  right: max(
+    var(--shell-padding),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding))
+  );
+  width: var(--size-small);
+  background: var(--color-blue);
 }
 
 main {
@@ -76,7 +124,7 @@ main {
   flex-direction: column;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 .end-bar {
@@ -97,7 +145,7 @@ main {
   flex-direction: column;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 #header .inner {
@@ -673,10 +721,11 @@ a.download:hover .tooltip {
   bottom: 0;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 #footer .inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -684,6 +733,7 @@ a.download:hover .tooltip {
   padding: var(--size-huge);
   border-bottom: 0;
   background: var(--color-red);
+  box-shadow: 0 200px 0 0 var(--color-red);
 }
 
 #footer * {
@@ -881,12 +931,7 @@ small {
     --size-super-large: 1.85rem;
     --size-ultra-large: 2rem;
     --size-huge: 2.5rem;
-  }
-
-  main,
-  #header,
-  #footer {
-    padding: 0 var(--size-medium);
+    --shell-padding: var(--size-medium);
   }
 
   .grid {
@@ -895,6 +940,10 @@ small {
 }
 
 @media only screen and (max-width: 600px) {
+  :root {
+    --shell-padding: var(--size-ultra-small);
+  }
+
   main {
     overflow: clip;
   }
@@ -903,12 +952,6 @@ small {
   section,
   #footer .inner {
     padding: var(--size-medium) var(--size-super-large) var(--size-super-large) var(--size-medium);
-  }
-
-  main,
-  #header,
-  #footer {
-    padding: 0 var(--size-ultra-small);
   }
 
   section {
