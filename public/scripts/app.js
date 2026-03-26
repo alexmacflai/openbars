@@ -12,6 +12,21 @@ function setDefaultRemainingTime() {
   });
 }
 
+function getTrackPointerProgress(event, track) {
+  const rect = track.getBoundingClientRect();
+  const computedStyle = window.getComputedStyle(track);
+  const hitSlop = parseFloat(computedStyle.borderTopWidth || "0") + 2;
+  const expandedLeft = rect.left - hitSlop;
+  const expandedWidth = rect.width + hitSlop * 2;
+  const pointerX = event.clientX - expandedLeft;
+
+  if (expandedWidth <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.max(pointerX / expandedWidth, 0), 1);
+}
+
 function stopCardPulse(card) {
   if (!card) {
     return;
@@ -43,9 +58,8 @@ function startCardPulse(card) {
 function updateRemainingTime(audio) {
   const audioIdWithoutPrefix = audio.id.replace("audio-", "");
   const remainingTimeDisplay = document.getElementById(`remaining-time-${audioIdWithoutPrefix}`);
-  const progressBarActive = document.querySelector(
-    `[data-audio-id="${audio.id}"] .song.track.active`,
-  );
+  const track = document.querySelector(`.song.track.inactive[data-audio-id="${audio.id}"]`);
+  const progressBarActive = track?.querySelector(".song.track.active");
 
   if (!remainingTimeDisplay || Number.isNaN(audio.duration) || !progressBarActive) {
     return;
@@ -53,7 +67,10 @@ function updateRemainingTime(audio) {
 
   const remaining = audio.duration - audio.currentTime;
   remainingTimeDisplay.textContent = formatTime(remaining);
-  progressBarActive.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+
+  if (!track?.classList.contains("previewing")) {
+    progressBarActive.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+  }
 }
 
 function setFullDurationOnLoad(audio) {
@@ -94,7 +111,7 @@ function setPausedAudioUI(audio) {
   const progressBarActive = document.querySelector(
     `[data-audio-id="${audio.id}"] .song.track.active`,
   );
-  const track = document.querySelector(`[data-audio-id="${audio.id}"]`);
+  const track = document.querySelector(`.song.track.inactive[data-audio-id="${audio.id}"]`);
   const card = audio.closest("article");
   if (remainingTimeDisplay && !Number.isNaN(audio.duration)) {
     const remaining = audio.duration - audio.currentTime;
@@ -149,9 +166,8 @@ function seekAudio(event, audioId) {
     return;
   }
 
-  const clickX = event.offsetX;
-  const totalWidth = track.offsetWidth;
-  audio.currentTime = (clickX / totalWidth) * audio.duration;
+  const progress = getTrackPointerProgress(event, track);
+  audio.currentTime = progress * audio.duration;
   track.classList.remove("previewing");
   updateRemainingTime(audio);
 
@@ -164,29 +180,29 @@ function previewSeekPosition(event, track) {
   const audioId = track.dataset.audioId;
   const audio = audioId ? document.getElementById(audioId) : null;
   const progressBarActive = track.querySelector(".song.track.active");
+  const remainingTimeDisplay = audioId ? document.getElementById(`remaining-time-${audioId.replace("audio-", "")}`) : null;
 
-  if (!audioId || !(audio instanceof HTMLAudioElement) || !audio.paused || !progressBarActive) {
+  if (!audioId || !(audio instanceof HTMLAudioElement) || !progressBarActive) {
     return;
   }
 
-  const totalWidth = track.offsetWidth;
-  if (totalWidth <= 0) {
-    return;
-  }
-
-  const pointerX = event.offsetX;
-  const previewProgress = Math.min(Math.max(pointerX / totalWidth, 0), 1);
+  const previewProgress = getTrackPointerProgress(event, track);
 
   track.classList.add("previewing");
   progressBarActive.style.width = `${previewProgress * 100}%`;
+
+  if (remainingTimeDisplay && !Number.isNaN(audio.duration)) {
+    remainingTimeDisplay.textContent = formatTime(audio.duration - previewProgress * audio.duration);
+  }
 }
 
 function clearSeekPreview(track) {
   const audioId = track.dataset.audioId;
   const audio = audioId ? document.getElementById(audioId) : null;
   const progressBarActive = track.querySelector(".song.track.active");
+  const remainingTimeDisplay = audioId ? document.getElementById(`remaining-time-${audioId.replace("audio-", "")}`) : null;
 
-  if (!audioId || !(audio instanceof HTMLAudioElement) || !audio.paused || !progressBarActive) {
+  if (!audioId || !(audio instanceof HTMLAudioElement) || !progressBarActive) {
     return;
   }
 
@@ -195,10 +211,16 @@ function clearSeekPreview(track) {
   progressBarActive.style.width = `${progress}%`;
 
   window.setTimeout(() => {
-    if (audio.paused) {
-      track.classList.remove("previewing");
-    }
+    track.classList.remove("previewing");
   }, 100);
+
+  if (remainingTimeDisplay && !Number.isNaN(audio.duration)) {
+    if (audio.paused) {
+      remainingTimeDisplay.textContent = formatTime(audio.duration - audio.currentTime);
+    } else {
+      remainingTimeDisplay.textContent = formatTime(audio.duration - audio.currentTime);
+    }
+  }
 }
 
 function splitWaveText() {

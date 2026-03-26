@@ -420,13 +420,19 @@ a.download {
 }
 
 .song.track.inactive {
+  position: relative;
   display: flex;
   flex: 1 0 0;
   height: var(--size-very-small);
-  overflow: hidden;
   border: var(--border);
   cursor: pointer;
   background: var(--color-blue);
+}
+
+.song.track.inactive::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * (2px + var(--size-tiny)));
 }
 
 .song.track.active {
@@ -434,12 +440,24 @@ a.download {
   height: 100%;
   flex: 0 0 auto;
   background: transparent;
-  transition: width 0.1s linear, background-color var(--duration-short) var(--timing-custom1);
+  transition:
+    width 0.1s linear,
+    background-color var(--duration-short) var(--timing-custom1);
 }
 
 .song.track.inactive:hover .active,
 .song.track.inactive.previewing .active {
   background: var(--color-red);
+}
+
+.card.playing .song.track.inactive.previewing .active {
+  background: var(--color-white);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible))
+  .song.track.inactive.previewing
+  .active {
+  background: var(--color-white);
 }
 
 button,
@@ -547,9 +565,7 @@ a.download:hover::after {
 .card.playing.pulse-on .download,
 .card.playing.pulse-off .download,
 .card.playing.pulse-on .song.track.inactive,
-.card.playing.pulse-off .song.track.inactive,
-.card.playing.pulse-on .song.track.active,
-.card.playing.pulse-off .song.track.active {
+.card.playing.pulse-off .song.track.inactive {
   transition:
     color var(--duration-pulse) var(--timing-pulse),
     background-color var(--duration-pulse) var(--timing-pulse),
@@ -599,6 +615,9 @@ a.download:hover::after {
 
 .card.playing.pulse-on .song.track.active {
   background: var(--color-yellow);
+  transition:
+    width 0.1s linear,
+    background-color var(--duration-pulse) var(--timing-pulse);
 }
 
 .card.playing.pulse-off .song.track.inactive {
@@ -608,6 +627,9 @@ a.download:hover::after {
 
 .card.playing.pulse-off .song.track.active {
   background: var(--color-red);
+  transition:
+    width 0.1s linear,
+    background-color var(--duration-pulse) var(--timing-pulse);
 }
 
 .card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
