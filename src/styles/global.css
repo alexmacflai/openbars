@@ -30,6 +30,7 @@
   --color-yellow: #eff483;
 
   --max-width: 90rem;
+  --shell-padding: var(--size-very-large);
 
   --border: var(--size-tiny) solid var(--color-blue);
   --shadow-default: var(--size-super-small) var(--size-super-small) 0 0 var(--color-blue);
@@ -39,8 +40,10 @@
   --duration-medium: 0.3s;
   --duration-long: 0.4s;
   --duration-very-long: 1s;
+  --duration-pulse: 400ms;
   --timing-custom1: cubic-bezier(0.3, 2, 0.58, 1);
   --timing-custom2: cubic-bezier(0.65, -0.21, 0.36, 1.56);
+  --timing-pulse: cubic-bezier(.5,0,.5,1);
   font-size: clamp(16px, 0.9vw, 20px);
 }
 
@@ -63,11 +66,58 @@ body {
   min-height: 100%;
 }
 
+html::before {
+  content: none;
+}
+
+html::after {
+  content: "";
+  position: fixed;
+  top: -100vh;
+  bottom: -100vh;
+  right: max(
+    calc(var(--shell-padding) + var(--size-small) + var(--size-super-small)),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding) + var(--size-small) + var(--size-super-small))
+  );
+  width: var(--size-tiny);
+  background: var(--color-blue);
+  pointer-events: none;
+  z-index: 2;
+}
+
 body {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: var(--color-grey);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  top: -100vh;
+  bottom: -100vh;
+  pointer-events: none;
+  z-index: 2;
+}
+
+body::before {
+  left: max(
+    var(--shell-padding),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding))
+  );
+  width: var(--size-tiny);
+  background: var(--color-blue);
+}
+
+body::after {
+  right: max(
+    var(--shell-padding),
+    calc(50% - (var(--max-width) / 2) + var(--shell-padding))
+  );
+  width: var(--size-small);
+  background: var(--color-blue);
 }
 
 main {
@@ -76,7 +126,7 @@ main {
   flex-direction: column;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 .end-bar {
@@ -97,7 +147,7 @@ main {
   flex-direction: column;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 #header .inner {
@@ -206,17 +256,25 @@ hgroup a:hover span {
 }
 
 .divider .inner {
-  display: flex;
-  align-items: center;
+  position: relative;
+  overflow: hidden;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 100%;
 }
 
-.divider img {
-  position: relative;
-  left: -6rem;
-  width: 100%;
-  transition: all var(--duration-very-long) ease;
+.divider .inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  background-image: url("/assets/images/divider.svg");
+  background-repeat: repeat-x;
+  background-position: left center;
+  background-size: 20%;
+  transform: translateX(var(--divider-offset, -6rem));
+  transition: transform var(--duration-very-long) ease;
 }
 
 section {
@@ -249,6 +307,7 @@ section h2 {
 }
 
 .card {
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -371,19 +430,23 @@ a.download {
 }
 
 .song.track.active {
-  flex: 1 0 0;
-  flex-shrink: 0;
-  align-self: stretch;
-  background: var(--color-red);
+  width: 0;
+  height: 100%;
+  flex: 0 0 auto;
+  background: transparent;
+  transition: width 0.1s linear, background-color var(--duration-short) var(--timing-custom1);
 }
 
-.song.track.inactive:hover .active {
-  background: var(--color-yellow);
+.song.track.inactive:hover .active,
+.song.track.inactive.previewing .active {
+  background: var(--color-red);
 }
 
 button,
 a.download {
   position: relative;
+  display: inline-grid;
+  place-items: center;
   justify-content: center;
   padding: var(--size-super-small);
   background: none;
@@ -403,6 +466,11 @@ a.download::after {
   transition: all var(--duration-quick) var(--timing-custom2);
 }
 
+.card.playing button::after,
+.card.playing a.download::after {
+  background: var(--color-white);
+}
+
 button:hover::after,
 a.download:hover::after {
   width: 2.5rem;
@@ -413,28 +481,39 @@ a.download:hover::after {
 
 .icon {
   z-index: 1;
+  color: inherit;
 }
 
-button .play,
-button .pause {
-  transition: all var(--duration-long) var(--timing-custom1);
-}
-
-button .pause {
-  position: absolute;
-  transform: rotate(-90deg);
-  opacity: 0;
-}
-
-.card.playing .pause {
+.card .icon-play {
   transform: rotate(0deg);
   opacity: 1;
 }
 
-.card.playing .play {
+.card .icon-pause {
+  transform: rotate(-90deg);
+  opacity: 0;
+}
+
+.card.playing .icon-pause {
+  transform: rotate(0deg);
+  opacity: 1;
+}
+
+.card.playing .icon-play {
   transform: rotate(90deg);
   opacity: 0;
 }
+
+.card .icon,
+.card .icon {
+  grid-area: 1 / 1;
+  will-change: transform, opacity;
+  transition:
+    transform var(--duration-long) var(--timing-custom1),
+    opacity var(--duration-long) var(--timing-custom1),
+    color var(--duration-pulse) var(--timing-pulse);
+}
+
 
 .card:hover {
   box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-blue);
@@ -442,101 +521,145 @@ button .pause {
 }
 
 .card:hover,
-.card.playing:hover {
-  transition: all var(--duration-short) var(--timing-custom1);
-  z-index: 1;
+.card:has(.download:hover),
+.card:has(button:focus-visible),
+.card:has(a.download:focus-visible) {
+  z-index: 4;
 }
 
+.card:hover,
 .card.playing:hover {
-  z-index: 3;
+  transition: all var(--duration-short) var(--timing-custom1);
 }
 
 .card.playing {
-  z-index: 3;
-  --card-playing-translate: var(--size-very-small);
-  --card-playing-shadow: calc(var(--size-small) + 0.245rem);
-  animation:
-    card-playing-color var(--duration-very-long) infinite ease-in-out,
-    card-playing var(--duration-very-long) infinite ease-in-out;
+  z-index: 10;
 }
 
-.card.playing * {
-  animation: card-text-playing var(--duration-very-long) infinite ease-in-out;
+.card.playing.pulse-on,
+.card.playing.pulse-off,
+.card.playing.pulse-on header h3,
+.card.playing.pulse-off header h3,
+.card.playing.pulse-on .remaining-time,
+.card.playing.pulse-off .remaining-time,
+.card.playing.pulse-on .player-toggle,
+.card.playing.pulse-off .player-toggle,
+.card.playing.pulse-on .download,
+.card.playing.pulse-off .download,
+.card.playing.pulse-on .song.track.inactive,
+.card.playing.pulse-off .song.track.inactive,
+.card.playing.pulse-on .song.track.active,
+.card.playing.pulse-off .song.track.active {
+  transition:
+    color var(--duration-pulse) var(--timing-pulse),
+    background-color var(--duration-pulse) var(--timing-pulse),
+    border-color var(--duration-pulse) var(--timing-pulse),
+    box-shadow var(--duration-pulse) var(--timing-pulse),
+    transform var(--duration-pulse) var(--timing-pulse);
 }
 
 .card.playing .new-label {
   animation: none;
 }
 
-.card.playing .track {
-  animation: card-track-playing var(--duration-very-long) infinite ease-in-out;
+.card.playing.pulse-on {
+  background: var(--color-yellow);
+  border-color: var(--color-red);
+  box-shadow: var(--size-super-small) var(--size-super-small) 0 0 var(--color-red);
+  transform: translate(0, 0);
 }
 
-.card.playing .track.active {
-  animation: card-active-track-playing var(--duration-very-long) infinite ease-in-out;
+.card.playing.pulse-off {
+  background: var(--color-white);
+  border-color: var(--color-blue);
+  box-shadow: calc(var(--size-small) + 0.245rem) calc(var(--size-small) + 0.245rem) 0 0 var(--color-blue);
+  transform: translate(calc(var(--size-very-small) * -1), calc(var(--size-very-small) * -1));
 }
 
-@keyframes card-playing {
-  0%,
-  100% {
-    box-shadow: var(--size-super-small) var(--size-super-small) 0 0 var(--color-red);
-    transform: translate(0, 0);
-    border-color: var(--color-red);
-  }
-  50% {
-    transform: translate(calc(var(--card-playing-translate) * -1), calc(var(--card-playing-translate) * -1));
-    box-shadow: var(--card-playing-shadow) var(--card-playing-shadow) 0 0 var(--color-blue);
-    border-color: var(--color-blue);
-  }
+.card.playing.pulse-on header h3,
+.card.playing.pulse-on .remaining-time,
+.card.playing.pulse-on .player-toggle,
+.card.playing.pulse-on .icon-pause,
+.card.playing.pulse-on .download {
+  color: var(--color-red);
 }
 
-@keyframes card-text-playing {
-  0%,
-  100% {
-    color: var(--color-red);
-  }
-  50% {
-    color: var(--color-blue);
-  }
+.card.playing.pulse-off header h3,
+.card.playing.pulse-off .remaining-time,
+.card.playing.pulse-off .player-toggle,
+.card.playing.pulse-off .icon-pause,
+.card.playing.pulse-off .download {
+  color: var(--color-blue);
 }
 
-@keyframes card-track-playing {
-  0%,
-  100% {
-    border-color: var(--color-red);
-    background-color: var(--color-red);
-  }
-  50% {
-    border-color: var(--color-blue);
-    background-color: var(--color-blue);
-  }
+.card.playing.pulse-on .song.track.inactive {
+  border-color: var(--color-red);
+  background: var(--color-red);
 }
 
-@keyframes card-active-track-playing {
-  0%,
-  100% {
-    background-color: var(--color-yellow);
-  }
-  50% {
-    background-color: var(--color-red);
-  }
+.card.playing.pulse-on .song.track.active {
+  background: var(--color-yellow);
 }
 
-@keyframes card-playing-color {
-  0%,
-  100% {
-    background-color: var(--color-yellow);
-  }
-  50% {
-    background-color: var(--color-white);
-  }
+.card.playing.pulse-off .song.track.inactive {
+  border-color: var(--color-blue);
+  background: var(--color-blue);
+}
+
+.card.playing.pulse-off .song.track.active {
+  background: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  border-color: var(--color-red);
+  background: var(--color-yellow);
+}
+
+.card.playing.pulse-off:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-red);
+  transform: translate(calc(0.38rem), calc(0.38rem));
+}
+
+.card.playing.pulse-on:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  box-shadow: calc(var(--size-tiny) + 0.2rem) calc(var(--size-tiny) + 0.2rem) 0 0 var(--color-red);
+  transform: translate(calc(0.38rem - 0.2rem), calc(0.38rem - 0.2rem));
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) header h3,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .remaining-time,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .player-toggle,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .icon-pause,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .download {
+  color: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .song.track.inactive {
+  border-color: var(--color-red);
+  background: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .song.track.active {
+  background: var(--color-yellow);
+}
+
+.card.playing .tooltip,
+.card.playing .tooltip * {
+  color: var(--color-blue);
+  animation: none;
+}
+
+.card.playing .tooltip.waveText span.letter {
+  animation-name: wave-small;
+  animation-duration: 0.3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
 }
 
 .tooltip {
   position: absolute;
   top: 2.25rem;
   right: 0;
-  z-index: 15;
+  z-index: 25;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -563,6 +686,14 @@ a.download:hover .tooltip {
   transition: all var(--duration-medium) var(--timing-custom1);
 }
 
+.card.paused {
+  z-index: 6;
+}
+
+.card.paused .song.track.active {
+  background: var(--color-red);
+}
+
 .tooltip * {
   color: inherit;
 }
@@ -573,10 +704,11 @@ a.download:hover .tooltip {
   bottom: 0;
   width: 100%;
   max-width: var(--max-width);
-  padding: 0 var(--size-very-large);
+  padding: 0 var(--shell-padding);
 }
 
 #footer .inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -584,6 +716,7 @@ a.download:hover .tooltip {
   padding: var(--size-huge);
   border-bottom: 0;
   background: var(--color-red);
+  box-shadow: 0 200px 0 0 var(--color-red);
 }
 
 #footer * {
@@ -781,12 +914,7 @@ small {
     --size-super-large: 1.85rem;
     --size-ultra-large: 2rem;
     --size-huge: 2.5rem;
-  }
-
-  main,
-  #header,
-  #footer {
-    padding: 0 var(--size-medium);
+    --shell-padding: var(--size-medium);
   }
 
   .grid {
@@ -795,6 +923,10 @@ small {
 }
 
 @media only screen and (max-width: 600px) {
+  :root {
+    --shell-padding: var(--size-ultra-small);
+  }
+
   main {
     overflow: clip;
   }
@@ -803,12 +935,6 @@ small {
   section,
   #footer .inner {
     padding: var(--size-medium) var(--size-super-large) var(--size-super-large) var(--size-medium);
-  }
-
-  main,
-  #header,
-  #footer {
-    padding: 0 var(--size-ultra-small);
   }
 
   section {

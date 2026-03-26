@@ -1,3 +1,28 @@
-<svg width="1980" height="1980" viewBox="0 0 1980 1981" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M353.604 354.396L1626.4 1627.19" stroke="#FB5A04" stroke-width="2000" stroke-dasharray="2 6"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 554 1980">
+  <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
+  <defs>
+    <style>
+      .st0, .st1 {
+        fill: none;
+      }
+
+      .st1 {
+        stroke: #fb5a04;
+        stroke-dasharray: 2 6;
+        stroke-miterlimit: 4;
+        stroke-width: 1999px;
+      }
+
+      .st2 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="st0" width="554" height="1980"/>
+    </clipPath>
+  </defs>
+  <g class="st2">
+    <path class="st1" d="M-356.3,354.2L915.8,1626.4"/>
+  </g>
 </svg>
