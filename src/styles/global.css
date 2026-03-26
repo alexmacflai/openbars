@@ -206,14 +206,25 @@ hgroup a:hover span {
 }
 
 .divider .inner {
-  width: calc(100% + 16rem);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.divider .inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
   height: 100%;
   background-image: url("/assets/images/divider.svg");
   background-repeat: repeat-x;
   background-position: left center;
-  background-size: auto 100%;
+  background-size: 20%;
   transform: translateX(var(--divider-offset, -6rem));
-  transition: all var(--duration-very-long) ease;
+  transition: transform var(--duration-very-long) ease;
 }
 
 section {
