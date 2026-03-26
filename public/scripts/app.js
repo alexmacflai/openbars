@@ -1,3 +1,5 @@
+const CARD_PULSE_INTERVAL_MS = 400;
+
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
@@ -8,6 +10,34 @@ function setDefaultRemainingTime() {
   document.querySelectorAll(".remaining-time").forEach((element) => {
     element.textContent = "0:00";
   });
+}
+
+function stopCardPulse(card) {
+  if (!card) {
+    return;
+  }
+
+  if (card.pulseIntervalId) {
+    window.clearInterval(card.pulseIntervalId);
+    delete card.pulseIntervalId;
+  }
+
+  card.classList.remove("pulse-on");
+  card.classList.remove("pulse-off");
+}
+
+function startCardPulse(card) {
+  if (!card) {
+    return;
+  }
+
+  stopCardPulse(card);
+  card.classList.add("pulse-on");
+
+  card.pulseIntervalId = window.setInterval(() => {
+    card.classList.toggle("pulse-on");
+    card.classList.toggle("pulse-off");
+  }, CARD_PULSE_INTERVAL_MS);
 }
 
 function updateRemainingTime(audio) {
@@ -52,6 +82,7 @@ function resetAudioUI(audio) {
   }
 
   if (card) {
+    stopCardPulse(card);
     card.classList.remove("playing");
     card.classList.remove("paused");
   }
@@ -77,6 +108,7 @@ function setPausedAudioUI(audio) {
   track?.classList.remove("previewing");
 
   if (card) {
+    stopCardPulse(card);
     card.classList.remove("playing");
     card.classList.add("paused");
   }
@@ -101,6 +133,7 @@ function togglePlayPause(audioId, button) {
     const card = audio.closest("article");
     card?.classList.add("playing");
     card?.classList.remove("paused");
+    startCardPulse(card);
   } else {
     audio.pause();
     setPausedAudioUI(audio);

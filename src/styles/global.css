@@ -40,8 +40,10 @@
   --duration-medium: 0.3s;
   --duration-long: 0.4s;
   --duration-very-long: 1s;
+  --duration-pulse: 400ms;
   --timing-custom1: cubic-bezier(0.3, 2, 0.58, 1);
   --timing-custom2: cubic-bezier(0.65, -0.21, 0.36, 1.56);
+  --timing-pulse: cubic-bezier(.5,0,.5,1);
   font-size: clamp(16px, 0.9vw, 20px);
 }
 
@@ -506,7 +508,10 @@ a.download:hover::after {
 .card .icon {
   grid-area: 1 / 1;
   will-change: transform, opacity;
-  transition: transform var(--duration-long) var(--timing-custom1), opacity var(--duration-long) var(--timing-custom1)
+  transition:
+    transform var(--duration-long) var(--timing-custom1),
+    opacity var(--duration-long) var(--timing-custom1),
+    color var(--duration-pulse) var(--timing-pulse);
 }
 
 
@@ -529,68 +534,111 @@ a.download:hover::after {
 
 .card.playing {
   z-index: 10;
-  --card-playing-translate: var(--size-very-small);
-  --card-playing-shadow: calc(var(--size-small) + 0.245rem);
-  animation:
-    card-playing-color var(--duration-very-long) infinite ease-in-out,
-    card-playing var(--duration-very-long) infinite ease-in-out;
 }
 
-.card.playing header h3,
-.card.playing .remaining-time,
-.card.playing .player-toggle,
-.card.playing .icon-pause,
-.card.playing .download {
-  animation: card-text-playing var(--duration-very-long) infinite ease-in-out;
+.card.playing.pulse-on,
+.card.playing.pulse-off,
+.card.playing.pulse-on header h3,
+.card.playing.pulse-off header h3,
+.card.playing.pulse-on .remaining-time,
+.card.playing.pulse-off .remaining-time,
+.card.playing.pulse-on .player-toggle,
+.card.playing.pulse-off .player-toggle,
+.card.playing.pulse-on .download,
+.card.playing.pulse-off .download,
+.card.playing.pulse-on .song.track.inactive,
+.card.playing.pulse-off .song.track.inactive,
+.card.playing.pulse-on .song.track.active,
+.card.playing.pulse-off .song.track.active {
+  transition:
+    color var(--duration-pulse) var(--timing-pulse),
+    background-color var(--duration-pulse) var(--timing-pulse),
+    border-color var(--duration-pulse) var(--timing-pulse),
+    box-shadow var(--duration-pulse) var(--timing-pulse),
+    transform var(--duration-pulse) var(--timing-pulse);
 }
 
 .card.playing .new-label {
   animation: none;
 }
 
-.card.playing .track {
-  animation: card-track-playing var(--duration-very-long) infinite ease-in-out;
-}
-
-.card.playing .track.active {
-  animation: card-active-track-playing var(--duration-very-long) infinite ease-in-out;
-}
-
-.card.playing:hover,
-.card.playing:has(button:focus-visible),
-.card.playing:has(a.download:focus-visible) {
-  transition: none;
-  animation: none;
-  transform: translate(0.38rem, 0.38rem);
-  box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-red);
-  border-color: var(--color-red);
+.card.playing.pulse-on {
   background: var(--color-yellow);
+  border-color: var(--color-red);
+  box-shadow: var(--size-super-small) var(--size-super-small) 0 0 var(--color-red);
+  transform: translate(0, 0);
 }
 
-.card.playing:hover *,
-.card.playing:has(button:focus-visible) *,
-.card.playing:has(a.download:focus-visible) * {
-  animation: none;
+.card.playing.pulse-off {
+  background: var(--color-white);
+  border-color: var(--color-blue);
+  box-shadow: calc(var(--size-small) + 0.245rem) calc(var(--size-small) + 0.245rem) 0 0 var(--color-blue);
+  transform: translate(calc(var(--size-very-small) * -1), calc(var(--size-very-small) * -1));
+}
+
+.card.playing.pulse-on header h3,
+.card.playing.pulse-on .remaining-time,
+.card.playing.pulse-on .player-toggle,
+.card.playing.pulse-on .icon-pause,
+.card.playing.pulse-on .download {
   color: var(--color-red);
 }
 
-.card.playing:hover .new-label,
-.card.playing:has(button:focus-visible) .new-label,
-.card.playing:has(a.download:focus-visible) .new-label {
-  color: var(--color-white);
+.card.playing.pulse-off header h3,
+.card.playing.pulse-off .remaining-time,
+.card.playing.pulse-off .player-toggle,
+.card.playing.pulse-off .icon-pause,
+.card.playing.pulse-off .download {
+  color: var(--color-blue);
 }
 
-.card.playing:hover .song.track.inactive,
-.card.playing:has(button:focus-visible) .song.track.inactive,
-.card.playing:has(a.download:focus-visible) .song.track.inactive {
+.card.playing.pulse-on .song.track.inactive {
   border-color: var(--color-red);
   background: var(--color-red);
 }
 
-.card.playing:hover .song.track.active,
-.card.playing:has(button:focus-visible) .song.track.active,
-.card.playing:has(a.download:focus-visible) .song.track.active {
-  animation: none;
+.card.playing.pulse-on .song.track.active {
+  background: var(--color-yellow);
+}
+
+.card.playing.pulse-off .song.track.inactive {
+  border-color: var(--color-blue);
+  background: var(--color-blue);
+}
+
+.card.playing.pulse-off .song.track.active {
+  background: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  border-color: var(--color-red);
+  background: var(--color-yellow);
+}
+
+.card.playing.pulse-off:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  box-shadow: var(--size-tiny) var(--size-tiny) 0 0 var(--color-red);
+  transform: translate(calc(0.38rem), calc(0.38rem));
+}
+
+.card.playing.pulse-on:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) {
+  box-shadow: calc(var(--size-tiny) + 0.2rem) calc(var(--size-tiny) + 0.2rem) 0 0 var(--color-red);
+  transform: translate(calc(0.38rem - 0.2rem), calc(0.38rem - 0.2rem));
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) header h3,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .remaining-time,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .player-toggle,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .icon-pause,
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .download {
+  color: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .song.track.inactive {
+  border-color: var(--color-red);
+  background: var(--color-red);
+}
+
+.card.playing:is(:hover, :has(button:focus-visible), :has(a.download:focus-visible)) .song.track.active {
   background: var(--color-yellow);
 }
 
@@ -605,62 +653,6 @@ a.download:hover::after {
   animation-duration: 0.3s;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
-}
-
-@keyframes card-playing {
-  0%,
-  100% {
-    box-shadow: var(--size-super-small) var(--size-super-small) 0 0 var(--color-red);
-    transform: translate(0, 0);
-    border-color: var(--color-red);
-  }
-  50% {
-    transform: translate(calc(var(--card-playing-translate) * -1), calc(var(--card-playing-translate) * -1));
-    box-shadow: var(--card-playing-shadow) var(--card-playing-shadow) 0 0 var(--color-blue);
-    border-color: var(--color-blue);
-  }
-}
-
-@keyframes card-text-playing {
-  0%,
-  100% {
-    color: var(--color-red);
-  }
-  50% {
-    color: var(--color-blue);
-  }
-}
-
-@keyframes card-track-playing {
-  0%,
-  100% {
-    border-color: var(--color-red);
-    background-color: var(--color-red);
-  }
-  50% {
-    border-color: var(--color-blue);
-    background-color: var(--color-blue);
-  }
-}
-
-@keyframes card-active-track-playing {
-  0%,
-  100% {
-    background-color: var(--color-yellow);
-  }
-  50% {
-    background-color: var(--color-red);
-  }
-}
-
-@keyframes card-playing-color {
-  0%,
-  100% {
-    background-color: var(--color-yellow);
-  }
-  50% {
-    background-color: var(--color-white);
-  }
 }
 
 .tooltip {
@@ -692,15 +684,6 @@ a.download:hover .tooltip {
   border-width: var(--size-tiny);
   color: var(--color-blue);
   transition: all var(--duration-medium) var(--timing-custom1);
-}
-
-.card.playing .song.track.inactive {
-  background: var(--color-red);
-  border-color: var(--color-red);
-}
-
-.card.playing .song.track.active {
-  background: var(--color-yellow);
 }
 
 .card.paused {
