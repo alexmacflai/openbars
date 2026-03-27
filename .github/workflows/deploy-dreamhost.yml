@@ -1,0 +1,81 @@
+name: Deploy to DreamHost
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check DreamHost configuration
+        id: config
+        env:
+          DREAMHOST_HOST: ${{ secrets.DREAMHOST_HOST }}
+          DREAMHOST_SITE_URL: ${{ secrets.DREAMHOST_SITE_URL }}
+          DREAMHOST_SSH_PRIVATE_KEY: ${{ secrets.DREAMHOST_SSH_PRIVATE_KEY }}
+          DREAMHOST_TARGET_DIR: ${{ secrets.DREAMHOST_TARGET_DIR }}
+          DREAMHOST_USERNAME: ${{ secrets.DREAMHOST_USERNAME }}
+        run: |
+          if [ -n "$DREAMHOST_HOST" ] && \
+             [ -n "$DREAMHOST_SITE_URL" ] && \
+             [ -n "$DREAMHOST_SSH_PRIVATE_KEY" ] && \
+             [ -n "$DREAMHOST_TARGET_DIR" ] && \
+             [ -n "$DREAMHOST_USERNAME" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "DreamHost secrets are not fully configured; skipping deploy."
+          fi
+
+      - name: Check out site repo
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+
+      - name: Check out assets repo
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: alexmacflai/openbars-assets
+          path: openbars-assets
+
+      - name: Set up Node.js
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.config.outputs.enabled == 'true'
+        run: npm ci
+
+      - name: Build site for production hosting
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          OPENBARS_ASSETS_DIR: ${{ github.workspace }}/openbars-assets
+          OPENBARS_ASSETS_BASE_URL: https://alexmacflai.github.io/openbars-assets/
+          OPENBARS_SITE_URL: ${{ secrets.DREAMHOST_SITE_URL }}
+          OPENBARS_BASE_PATH: /
+        run: npm run build
+
+      - name: Start SSH agent
+        if: steps.config.outputs.enabled == 'true'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DREAMHOST_SSH_PRIVATE_KEY }}
+
+      - name: Add DreamHost host key
+        if: steps.config.outputs.enabled == 'true'
+        run: ssh-keyscan -H "${{ secrets.DREAMHOST_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload site to DreamHost
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          rsync -avz \
+            --mkpath \
+            dist/ \
+            "${{ secrets.DREAMHOST_USERNAME }}@${{ secrets.DREAMHOST_HOST }}:${{ secrets.DREAMHOST_TARGET_DIR }}/"
