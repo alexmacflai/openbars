@@ -45,6 +45,8 @@ jobs:
         env:
           OPENBARS_ASSETS_DIR: ${{ github.workspace }}/openbars-assets
           OPENBARS_ASSETS_BASE_URL: https://alexmacflai.github.io/openbars-assets/
+          OPENBARS_SITE_URL: https://alexmacflai.github.io
+          OPENBARS_BASE_PATH: /openbars/
         run: npm run build
 
       - name: Upload Pages artifact
