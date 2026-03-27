@@ -6,6 +6,7 @@ type Props = {
 };
 
 const { title = "Open bars" } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <!doctype html>
@@ -14,7 +15,7 @@ const { title = "Open bars" } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
-    <link rel="icon" href="/assets/images/favicon.png" />
+    <link rel="icon" href={`${baseUrl}assets/images/favicon.png`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,6 +29,6 @@ const { title = "Open bars" } = Astro.props;
   </head>
   <body>
     <slot />
-    <script is:inline src="/scripts/app.js" defer></script>
+    <script is:inline src={`${baseUrl}scripts/app.js`} defer></script>
   </body>
 </html>
