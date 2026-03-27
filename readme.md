@@ -82,3 +82,15 @@ OPENBARS_MIGRATION_AUDIO_BASE_URL=https://raw.githubusercontent.com/your-user/yo
 - The built site is static and suitable for DreamHost deployment.
 - Public MP3 and ZIP files should be served from GitHub-hosted asset URLs.
 - This repo should preserve the original archive experience while shedding WordPress-only scaffolding.
+
+### DreamHost auto-deploy
+This repo includes a GitHub Actions workflow for deploying to DreamHost on every push to `main`.
+
+Required GitHub repository secrets:
+- `DREAMHOST_HOST`: SSH host name for your DreamHost server.
+- `DREAMHOST_USERNAME`: SSH user name for deployment.
+- `DREAMHOST_SSH_PRIVATE_KEY`: Private key with write access to the target directory.
+- `DREAMHOST_TARGET_DIR`: Absolute remote path for the site, such as `/home/username/example.com`.
+- `DREAMHOST_SITE_URL`: Canonical site URL for production, such as `https://openbars.example.com`.
+
+The workflow uploads the built `dist/` directory with `rsync` and does not delete remote files by default.
