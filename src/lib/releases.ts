@@ -1,4 +1,4 @@
-import { readdir, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 export type Release = {
@@ -8,8 +8,26 @@ export type Release = {
   year: string;
   audioUrl: string;
   downloadUrl: string;
+  durationSeconds: number | null;
   emoji: string;
   isNew: boolean;
+};
+
+export type ReleaseManifestEntry = {
+  id: string;
+  slug: string;
+  date: string;
+  year: string;
+  audioPath: string;
+  downloadPath: string;
+  audioUrl?: string;
+  downloadUrl?: string;
+  durationSeconds?: number | null;
+};
+
+type ReleaseManifest = {
+  generatedAt: string;
+  releases: ReleaseManifestEntry[];
 };
 
 const EMOJIS = [
@@ -95,10 +113,12 @@ type CanonicalRelease = {
   date: string;
   audioPath: string;
   downloadPath: string;
+  durationSeconds?: number | null;
 };
 
 const projectRoot = process.cwd();
 const sourceMode = process.env.OPENBARS_SOURCE_MODE ?? "canonical";
+const snapshotManifestPath = path.join(projectRoot, "public", "releases.snapshot.json");
 
 const canonicalAssetsDir = path.resolve(
   process.env.OPENBARS_ASSETS_DIR ?? path.join(projectRoot, "..", "openbars-assets"),
@@ -106,6 +126,8 @@ const canonicalAssetsDir = path.resolve(
 const canonicalAssetsBaseUrl = withTrailingSlash(
   process.env.OPENBARS_ASSETS_BASE_URL ?? "https://alexmacflai.github.io/openbars-assets/",
 );
+const canonicalAssetsManifestUrl =
+  process.env.OPENBARS_ASSETS_MANIFEST_URL ?? toPublicUrl(canonicalAssetsBaseUrl, "releases.json");
 
 const migrationAudioDir = path.resolve(
   process.env.OPENBARS_MIGRATION_AUDIO_DIR ??
@@ -124,10 +146,7 @@ const migrationZipBaseUrl = withTrailingSlash(
 );
 
 export async function getReleases(): Promise<Release[]> {
-  const canonicalReleases =
-    sourceMode === "canonical"
-      ? await scanCanonicalAssets(canonicalAssetsDir)
-      : await scanMigrationSources();
+  const canonicalReleases = await loadCanonicalReleases();
 
   return canonicalReleases
     .map((release) => ({
@@ -143,10 +162,35 @@ export async function getReleases(): Promise<Release[]> {
         sourceMode === "canonical"
           ? toPublicUrl(canonicalAssetsBaseUrl, release.downloadPath)
           : toPublicUrl(migrationZipBaseUrl, release.downloadPath),
+      durationSeconds: release.durationSeconds ?? null,
       emoji: emojiForSeed(release.slug),
       isNew: isNewRelease(release.date),
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getLiveManifestUrl(): string | null {
+  return sourceMode === "canonical" ? canonicalAssetsManifestUrl : null;
+}
+
+async function loadCanonicalReleases(): Promise<CanonicalRelease[]> {
+  if (sourceMode !== "canonical") {
+    return scanMigrationSources();
+  }
+
+  const snapshotManifest = await readManifest(snapshotManifestPath);
+  if (snapshotManifest?.releases.length) {
+    return snapshotManifest.releases.map((release) => ({
+      id: release.id,
+      slug: release.slug,
+      date: release.date,
+      audioPath: release.audioPath,
+      downloadPath: release.downloadPath,
+      durationSeconds: release.durationSeconds ?? null,
+    }));
+  }
+
+  return scanCanonicalAssets(canonicalAssetsDir);
 }
 
 async function scanCanonicalAssets(assetsDir: string): Promise<CanonicalRelease[]> {
@@ -351,4 +395,48 @@ function withTrailingSlash(value: string): string {
 
 function normalizeSlashes(value: string): string {
   return value.split(path.sep).join("/");
+}
+
+async function readManifest(manifestPath: string): Promise<ReleaseManifest | null> {
+  const rawManifest = await readFile(manifestPath, "utf8").catch(() => null);
+
+  if (!rawManifest) {
+    return null;
+  }
+
+  const manifest = JSON.parse(rawManifest) as Partial<ReleaseManifest>;
+  if (!Array.isArray(manifest.releases)) {
+    throw new Error(`Invalid release manifest: ${manifestPath}`);
+  }
+
+  return {
+    generatedAt: manifest.generatedAt ?? "",
+    releases: manifest.releases.map((release) => normalizeManifestEntry(release)),
+  };
+}
+
+function normalizeManifestEntry(entry: Partial<ReleaseManifestEntry>): ReleaseManifestEntry {
+  if (
+    !entry.id ||
+    !entry.slug ||
+    !entry.date ||
+    !entry.year ||
+    !entry.audioPath ||
+    !entry.downloadPath
+  ) {
+    throw new Error("Release manifest entry is missing required fields.");
+  }
+
+  return {
+    id: entry.id,
+    slug: entry.slug,
+    date: entry.date,
+    year: entry.year,
+    audioPath: entry.audioPath,
+    downloadPath: entry.downloadPath,
+    audioUrl: entry.audioUrl,
+    downloadUrl: entry.downloadUrl,
+    durationSeconds:
+      typeof entry.durationSeconds === "number" ? Math.round(entry.durationSeconds) : null,
+  };
 }

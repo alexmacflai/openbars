@@ -3,10 +3,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import ReleaseCard from "../components/ReleaseCard.astro";
-import { getReleases } from "../lib/releases";
+import { getLiveManifestUrl, getReleases } from "../lib/releases";
 import { siteCopy, siteLinks } from "../lib/site";
 
 const releases = await getReleases();
+const liveManifestUrl = getLiveManifestUrl();
 const releasesByYear = Object.entries(
   releases.reduce<Record<string, typeof releases>>((groups, release) => {
     groups[release.year] ??= [];
@@ -36,27 +37,48 @@ const releasesByYear = Object.entries(
       <small>{siteCopy.disclaimer}</small>
     </hgroup>
 
-    {
-      releasesByYear.map(([year, yearlyReleases]) => (
-        <section>
-          <div class="end-bar"></div>
-          <h2>{year}</h2>
-          <div class="carousel">
-            <div class="grid grab">
-              {yearlyReleases.map((release) => (
-                <ReleaseCard release={release} />
-              ))}
+    <div id="archive" data-live-manifest-url={liveManifestUrl ?? undefined}>
+      {
+        releasesByYear.map(([year, yearlyReleases]) => (
+          <section>
+            <div class="end-bar"></div>
+            <h2>{year}</h2>
+            <div class="carousel">
+              <div class="grid grab">
+                {yearlyReleases.map((release) => (
+                  <ReleaseCard release={release} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      ))
-    }
+          </section>
+        ))
+      }
+    </div>
   </main>
+
+  <script
+    id="release-manifest"
+    type="application/json"
+    is:inline
+    set:html={JSON.stringify({ releases })}
+  ></script>
 
   <span id="anchor-end"></span>
   <div class="snackbar">
     <span class="material-symbols-sharp icon">done</span>
     <p>Link to song copied to clipboard.</p>
   </div>
-  <Footer heading={siteCopy.footerHeading} />
+  <Footer
+    heading={siteCopy.footerHeading}
+    intro={siteCopy.footerIntro}
+    betweenLink1And2={siteCopy.footerBetweenLink1And2}
+    betweenLink2And3={siteCopy.footerBetweenLink2And3}
+    outro={siteCopy.footerOutro}
+    link1Name={siteLinks.link1Name}
+    link1Url={siteLinks.link1Url}
+    link2Name={siteLinks.link2Name}
+    link2Url={siteLinks.link2Url}
+    link3Name={siteLinks.link3Name}
+    link3Url={siteLinks.link3Url}
+  />
 </BaseLayout>
