@@ -1,36 +1,39 @@
 ---
 type Props = {
   heading: string;
+  intro: string;
+  betweenLink1And2: string;
+  betweenLink2And3?: string;
+  outro: string;
+  link1Name: string;
+  link1Url: string;
+  link2Name: string;
+  link2Url: string;
+  link3Name?: string;
+  link3Url?: string;
 };
 
-const { heading } = Astro.props;
+const {
+  heading,
+  intro,
+  betweenLink1And2,
+  betweenLink2And3 = "",
+  outro,
+  link1Name,
+  link1Url,
+  link2Name,
+  link2Url,
+  link3Name = "",
+  link3Url = "",
+} = Astro.props;
+
+const hasLink3 = link3Name.length > 0 && link3Url.length > 0;
 ---
 
 <footer id="footer">
   <div class="inner">
     <div class="end-bar"></div>
     <h2 class="waveText">{heading}</h2>
-    <p>
-      My drive to create is both my curse and my muse. Mostly my curse. Please help this tormented soul:
-      wander through
-      <a
-        class="waveText"
-        href="https://open.spotify.com/show/38GvMWusP4DZXYxmvFmKqw"
-        target="_blank"
-        rel="noreferrer"
-      >
-        God's Answering Machine
-      </a>
-      or follow my journey at
-      <a
-        class="waveText"
-        href="https://www.instagram.com/alexmacflai/"
-        target="_blank"
-        rel="noreferrer"
-      >
-        @alexmacflai
-      </a>.
-      Quickly, my time is running out!
-    </p>
+    <p>{intro} <a class="waveText" href={link1Url} target="_blank" rel="noreferrer">{link1Name}</a>, {betweenLink1And2} <a class="waveText" href={link2Url} target="_blank" rel="noreferrer">{link2Name}</a>{hasLink3 && <>, {betweenLink2And3}{" "}<a class="waveText" href={link3Url} target="_blank" rel="noreferrer">{link3Name}</a></>}. {outro}</p>
   </div>
 </footer>

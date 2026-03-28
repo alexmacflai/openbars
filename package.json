@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-release-snapshot.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/generate-release-snapshot.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check"

@@ -9,12 +9,19 @@ export const siteCopy = {
     "Some of these projects may (wink wink) use unlicensed samples. Do with this information whatever you want.",
   footerHeading:
     "Hi, I'm Alex Cruz, a creative who gives birth to a new idea, just like this one, every week",
-  footerText:
-    "My drive to create is both my curse and my muse. Mostly my curse. Please help this tormented soul: wander through God's Answering Machine, or follow my journey at @alexmacflai while there is still time.",
+  footerIntro:
+    "My drive to create is both my curse and my muse. Mostly my curse. Please help this tormented soul: wander through",
+  footerBetweenLink1And2: "follow my journey at",
+  footerBetweenLink2And3: "or check another project like",
+  footerOutro: "Quickly, my time is running out!",
 };
 
 export const siteLinks = {
   license: "https://creativecommons.org/publicdomain/zero/1.0/?ref=chooser-v1",
-  podcast: "https://open.spotify.com/show/38GvMWusP4DZXYxmvFmKqw",
-  instagram: "https://www.instagram.com/alexmacflai/",
+  link1Name: "my portfolio",
+  link1Url: "https://alexcruz.design/",
+  link2Name: "@alexmacflai",
+  link2Url: "https://www.instagram.com/alexmacflai",
+  link3Name: "dice",
+  link3Url: "https://dice.alexcruz.design/",
 };

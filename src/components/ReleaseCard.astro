@@ -8,6 +8,16 @@ type Props = {
 const { release } = Astro.props;
 const audioId = `audio-${release.slug}`;
 const remainingId = `remaining-time-${release.slug}`;
+const remainingTimeLabel =
+  typeof release.durationSeconds === "number"
+    ? formatDuration(release.durationSeconds)
+    : null;
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
 ---
 
 <article id={release.slug} class="card">
@@ -34,8 +44,12 @@ const remainingId = `remaining-time-${release.slug}`;
       </button>
 
       <div class="song progress">
-        <h5 class="song remaining-time" id={remainingId}>
-          <span class="spinner" aria-hidden="true"></span>
+        <h5
+          class="song remaining-time"
+          id={remainingId}
+          data-duration-seconds={release.durationSeconds ?? undefined}
+        >
+          {remainingTimeLabel ?? <span class="spinner" aria-hidden="true"></span>}
         </h5>
         <div class="song track inactive" data-audio-id={audioId}>
           <div class="song track active" style="width: 0%;"></div>
